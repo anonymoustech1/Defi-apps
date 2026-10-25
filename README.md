@@ -1,70 +1,138 @@
-# Getting Started with Create React App
+# Defiemrys App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A learning DeFi project: an ERC-20 token with an automatic-burn transfer, a Hardhat backend (contracts, tests, deployment) and a React frontend that connects to MetaMask.
 
-## Available Scripts
+> **Status:**
+ work in progress. The token page works on a local Hardhat network. Liquidity, Swap, Stake, Farm and Loan are placeholders for upcoming features.
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- **SimpleDeFiToken (SDFT)**: an ERC-20 token built on OpenZeppelin, with a fixed total supply of 1,000,000,000 minted to the deployer.
+- **Normal transfer**: 
+the standard ERC-20 `transfer`.
+- **Transfer with burn**: 
+`transferWithAutoBurn` destroys 10% of the amount and sends the rest to the recipient.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Wallet connection** 
+through MetaMask, with live total supply and balance.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Automated tests** 
+for the token (name, symbol, supply, transfers, revert on insufficient balance, auto burn).
 
-### `npm test`
+## Tech stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Area | Tools |
+|---|---|
+| Smart contracts | Solidity 0.8.28, OpenZeppelin Contracts v5 |
+| Backend tooling | Hardhat 3, ethers v6, Mocha and Chai |
+| Frontend | React (Create React App), Material UI, web3-react, react-toastify |
 
-### `npm run build`
+## Project structure
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+defi-apps/
+├── src/
+│   ├── backend/            # Hardhat project
+│   │   ├── contracts/      # Solidity contracts
+│   │   ├── scripts/        # deploy.js
+│   │   ├── test/           # Mocha tests
+│   │   └── hardhat.config.js
+│   └── frontend/           # React app
+│       └── src/
+│           ├── components/ # Layout, Wallet
+│           ├── contracts/  # ABI and deployed address read by the app
+│           └── features/   # TokenOperations and the other pages
+└── README.md
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Requirements
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **Node.js 22 or newer** for the backend (Hardhat 3).
+- **Node.js 20** for the frontend (Create React App hangs on Node 24).
+- [MetaMask](https://metamask.io/) browser extension.
 
-### `npm run eject`
+With [nvm](https://github.com/nvm-sh/nvm) you can switch versions per terminal: `nvm use 22` or `nvm use 20`.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Getting started
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 1. Backend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+cd src/backend
+nvm use 22
+npm install
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Run the tests:
 
-## Learn More
+```bash
+npx hardhat test mocha
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Start a local blockchain (keep this terminal open):
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npx hardhat node
+```
 
-### Code Splitting
+In a second terminal, deploy the token to it:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+cd src/backend
+npx hardhat run scripts/deploy.js --network localhost
+```
 
-### Analyzing the Bundle Size
+A local node forgets everything when it stops, so deploy again after each restart.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### 2. MetaMask
 
-### Making a Progressive Web App
+1. Add a network: RPC URL `http://127.0.0.1:8545`, chain ID `31337`, currency symbol `ETH`.
+2. Import one of the test accounts printed by `npx hardhat node` (use **Account #0**, the deployer, which holds all the tokens).
+3. Use these test keys **only** on the local network. They are public. Never send real funds to them.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### 3. Frontend
 
-### Advanced Configuration
+```bash
+cd src/frontend
+nvm use 20
+npm install
+npm start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Open <http://localhost:3000>, connect the wallet, and make sure MetaMask is on the Hardhat network.
 
-### Deployment
+## Environment variables (Sepolia, optional)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Only needed to deploy to the Sepolia test network. Create `src/backend/.env`:
 
-### `npm run build` fails to minify
+```
+SEPOLIA_API_URL=https://your-sepolia-rpc-url
+SEPOLIA_PRIVATE_KEY=your-test-wallet-private-key
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Never commit this file.** It is listed in `.gitignore`. Use a throwaway test wallet, not one that holds real funds.
+
+## Scripts (backend)
+
+| Command | What it does |
+|---|---|
+| `npx hardhat test mocha` | Runs the test suite |
+| `npx hardhat node` | Starts a local blockchain |
+| `npm run deploy:localhost` | Deploys to the local node |
+| `npm run deploy:sepolia` | Deploys to Sepolia |
+
+## Roadmap
+
+- [ ] Liquidity pool
+- [ ] Token swap
+- [ ] Staking
+- [ ] Yield farming
+- [ ] Lending and borrowing
+
+## Disclaimer
+
+This is an educational project. The contracts have not been audited and the token has no monetary value. Do not deploy to a main network or use real funds.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
